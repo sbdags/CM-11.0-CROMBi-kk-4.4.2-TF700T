@@ -1,0 +1,3 @@
+post-build=asus/US_epad/EeePad:4.2.1/JOP40D/US_epad-10.6.1.14.10-20130801:user/release-keys
+post-timestamp=1393568599
+pre-device=tf700t
