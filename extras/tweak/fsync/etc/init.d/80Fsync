@@ -1,0 +1,6 @@
+#!/system/bin/sh
+# Disable FSync
+# Asus Stock Kernel
+echo 0 > /sys/devices/virtual/misc/fsynccontrol/fsync_enabled
+# CM11 Kernel
+echo 0 > /sys/module/sync/parameters/fsync_enabled

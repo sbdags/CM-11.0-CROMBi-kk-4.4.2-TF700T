@@ -1,9 +1,255 @@
-assert(getprop("ro.product.device") == "tf700t" || getprop("ro.build.product") == "tf700t" || abort("This package is for \"tf700t\" devices; this is a \"" + getprop("ro.product.device") + "\"."););
-show_progress(0.500000, 0);
-unmount("/system");
+# CROMI Installer
+set_progress(0.00);
+ui_print("Thank you for installing CROMBi-X JB 4.4.2!");
+ui_print("Sit back and relax...");
+ui_print("-----------------------------------------------------");
+ui_print("This will take a few minutes!");
+
+show_progress(0.99, 1600);
+ui_print("Preparing File System...");
+package_extract_dir("prep", "/tmp");
+set_perm_recursive(0, 0, 0755, 0755, "/tmp");
+
+ui_print("Formatting System....");
 format("ext4", "EMMC", "/dev/block/mmcblk0p1", "0", "/system");
 mount("ext4", "EMMC", "/dev/block/mmcblk0p1", "/system");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p2", "/cache");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p8", "/data");
+
+ui_print("Tuning System....");
+run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p1");
+ui_print("Tuning Cache....");
+run_program("/tmp/tune2fs.ext4", "-O", "^has_journal", "/dev/block/mmcblk0p2");
+ui_print("Tuning Data....");
+run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p8");
+
+if
+    file_getprop("/tmp/aroma-data/wipe.prop","selected") == "1"
+then
+    ui_print("Wiping Dalvik Cache.....");
+    delete_recursive("/data/dalvik-cache");
+endif;
+ui_print("Wiping Cache.....");
+delete_recursive("/cache");
+
+#Install System
+ui_print("Installing Core System...");
 package_extract_dir("system", "/system");
+
+ui_print("Installing Options...");
+#-- Kernel --#
+ui_print("Kernel Preparation");
+
+if
+	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "1"
+then
+	ui_print(" - lj50036's CM11 Kernel");
+	package_extract_dir("extras/kernel/ljcm11/system", "/system");
+	package_extract_file("ljcm11.blob", "/dev/block/mmcblk0p4");
+endif;
+if
+	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "2"
+then
+	ui_print(" - lj50036 / _that's CM11 Modded Kernel");
+	package_extract_dir("extras/kernel/sbcm11/system", "/system");
+	package_extract_file("ljthat8.blob", "/dev/block/mmcblk0p4");
+endif;
+if
+	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "3"
+then
+	ui_print(" - No Kernel to Flash");
+endif;
+
+#-- DPI --#
+ui_print("DPI Preparation");
+#TF700 DPI
+
+if
+	file_getprop("/tmp/aroma-data/dpi.prop","selected.0") == "1"
+then
+	ui_print(" - 240 DPI");
+	package_extract_dir("extras/dpi/240", "/tmp");
+endif;
+if
+	file_getprop("/tmp/aroma-data/dpi.prop","selected.0") == "2"
+then
+	ui_print(" - 224 DPI");
+	package_extract_dir("extras/dpi/224", "/tmp");
+endif;
+if
+	file_getprop("/tmp/aroma-data/dpi.prop","selected.0") == "3"
+then
+	ui_print(" - 213 DPI");
+	package_extract_dir("extras/dpi/213", "/tmp");
+endif;
+if
+	file_getprop("/tmp/aroma-data/dpi.prop","selected.0") == "4"
+then
+	ui_print(" - 200 DPI");
+	package_extract_dir("extras/dpi/200", "/tmp");
+endif;
+if
+	file_getprop("/tmp/aroma-data/dpi.prop","selected.0") == "5"
+then
+	ui_print(" - 180 DPI");
+	package_extract_dir("extras/dpi/180", "/tmp");
+endif;
+if
+	file_getprop("/tmp/aroma-data/dpi.prop","selected.0") == "6"
+then
+	ui_print(" - 160 DPI");
+	package_extract_dir("extras/dpi/160", "/tmp");
+endif;
+
+#-- Boot Animations --#
+ui_print("Boot Animations");
+if
+    file_getprop("/tmp/aroma-data/boot.prop","selected.0") == "1"
+then
+	ui_print(" - Cyanogen Ring of Fire");
+    package_extract_dir("extras/boot/cmrof", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/boot.prop","selected.0") == "2"
+then
+	ui_print(" - Cyanogen Colors");
+    package_extract_dir("extras/boot/cmcolors", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/boot.prop","selected.0") == "3"
+then
+	ui_print(" - Google Nexus");
+    package_extract_dir("extras/boot/nexusflow", "/system");
+endif;
+
+#-- Launchers --#
+ui_print("Launcher");
+if
+    file_getprop("/tmp/aroma-data/launcher.prop","item.0.1") == "1"
+then
+	ui_print(" - Trebuchet Launcher");
+    package_extract_dir("extras/launchers/trebuchet", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/launcher.prop","item.0.2") == "1"
+then
+	ui_print(" - Google Experience Launcher");
+    package_extract_dir("extras/launchers/gel", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/launcher.prop","item.0.3") == "1"
+then
+	ui_print(" - Apex Launcher");
+    package_extract_dir("extras/launchers/apex", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/launcher.prop","item.0.4") == "1"
+then
+	ui_print(" - Nova Launcher");
+    package_extract_dir("extras/launchers/nova", "/system");
+endif;
+
+#-- Misc Apps --#
+ui_print("");
+ui_print("Misc Apps");
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.1.1") == "1"
+then
+	ui_print(" - ES File Explorer");
+    package_extract_dir("extras/misc/es", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.1.2") == "1"
+then
+	ui_print(" - AdAway installed");
+    package_extract_dir("extras/misc/adaway", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.1.3") == "1"
+then
+	ui_print(" - Keyboard Manager");
+    package_extract_dir("extras/misc/km", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.1.4") == "1"
+then
+	ui_print(" - Terminal Emulator");
+    package_extract_dir("extras/misc/terminal", "/system");
+endif;
+
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.2.1") == "1"
+then
+	ui_print(" - Adobe Flash");
+	delete("/data/app/com.adobe.flashplayer-2.apk");
+    package_extract_dir("extras/misc/flash", "/data");
+endif;
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.2.2") == "1"
+then
+	ui_print(" - Titanium Backup");
+	delete("/data/app/com.keramidas.TitaniumBackup-2.apk");
+	delete("/data/app/com.keramidas.TitaniumBackup-3.apk");
+    package_extract_dir("extras/misc/tibu", "/data");
+endif;
+if
+    file_getprop("/tmp/aroma-data/misc.prop","item.2.3") == "1"
+then
+	ui_print(" - DropBox");
+	delete("/data/app/com.dropbox.android-2.apk");
+    package_extract_dir("extras/misc/dropbox", "/data");
+endif;
+
+#-- Tweaks --#
+ui_print("");
+ui_print("Tweaks and Scripts");
+
+if
+	file_getprop("/tmp/aroma-data/tweak.prop","item.1.1") == "1"
+then
+	ui_print(" - Browser2RAM enabled");
+    package_extract_dir("extras/tweak/b2r", "/system");
+endif;
+
+if
+    file_getprop("/tmp/aroma-data/tweak.prop","item.1.2") == "1"
+then
+	ui_print(" - Ad Blocker enabled");
+    package_extract_dir("extras/tweak/adblock", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma/tweak.prop","item.1.3") == "1"
+then
+	ui_print(" - fsync disabled");
+    package_extract_dir("extras/tweak/fsync", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/tweak.prop","item.1.4") == "1"
+then
+	ui_print(" - Zip Align Script installed");
+    package_extract_dir("extras/tweak/zipalign", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/tweak.prop","item.1.5") == "1"
+then
+	ui_print(" - Xposed App installed");
+    package_extract_dir("tweak/xposed/system", "/system");
+	delete("/data/app/com.ceco.gm2.gravitybox-2.apk");
+	package_extract_dir("extras/tweak/xposed/data", "/data");
+	package_extract_dir("extras/tweak/xposed/sdcard", "/sdcard");
+endif;
+if
+    file_getprop("/tmp/aroma-data/tweak.prop","item.1.6") == "1"
+then
+	ui_print(" - Sotfware Rendering disabled");
+	package_extract_dir("extras/tweak/gpu/script", "/tmp");
+	run_program ("/sbin/sh", "/tmp/force-gpu.sh");
+    package_extract_dir("extras/tweak/gpu/system", "/system");
+endif;
+
+#Build Sym Links#
+ui_print("");
+ui_print("Building symlinks.....");
 symlink("../bin/fsck.f2fs", "/system/bin/dump.f2fs");
 symlink("../xbin/su", "/system/bin/su");
 symlink("Roboto-Bold.ttf", "/system/fonts/DroidSans-Bold.ttf");
@@ -115,6 +361,10 @@ symlink("toolbox", "/system/bin/cat", "/system/bin/chcon",
         "/system/bin/touch", "/system/bin/umount", "/system/bin/uptime",
         "/system/bin/vmstat", "/system/bin/watchprops",
         "/system/bin/wipe");
+
+#Set Permissions#
+ui_print("");
+ui_print("Setting permissions.....");
 set_metadata_recursive("/system", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0644, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 set_metadata_recursive("/system/addon.d", "uid", 0, "gid", 0, "dmode", 0755, "fmode", 0755, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 set_metadata_recursive("/system/bin", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0755, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
@@ -161,8 +411,31 @@ set_metadata("/system/xbin/librank", "uid", 0, "gid", 0, "mode", 06755, "capabil
 set_metadata("/system/xbin/procmem", "uid", 0, "gid", 0, "mode", 06755, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 set_metadata("/system/xbin/procrank", "uid", 0, "gid", 0, "mode", 06755, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 set_metadata("/system/xbin/su", "uid", 0, "gid", 0, "mode", 06755, "capabilities", 0x0, "selabel", "u:object_r:su_exec:s0");
-show_progress(0.200000, 0);
-show_progress(0.200000, 10);
-package_extract_file("boot.blob", "/dev/block/mmcblk0p4");
-show_progress(0.100000, 0);
+
+package_extract_file("system/bin/backuptool.sh", "/tmp/backuptool.sh");
+package_extract_file("system/bin/backuptool.functions", "/tmp/backuptool.functions");
+set_perm(0, 0, 0777, "/tmp/backuptool.sh");
+set_perm(0, 0, 0644, "/tmp/backuptool.functions");
+run_program("/tmp/backuptool.sh", "restore");
+delete("/system/bin/backuptool.sh");
+delete("/system/bin/backuptool.functions");
+
+#Install CROMBi-X System
+ui_print("Installing CROMBi-X System...");
+package_extract_dir("extras/crombix/system", "/system");
+package_extract_dir("extras/crombix/build-prop", "/tmp");
+set_perm(0, 0, 0777, "/tmp/crombix-build-prop.sh");
+run_program ("/tmp/crombix-build-prop.sh");
+
+#-- DPI --#
+ui_print("Installing build.prop");
+set_perm(0, 0, 0777, "/tmp/upd-build-prop.sh");
+run_program ("/tmp/upd-build-prop.sh");
+
+ui_print("Finalising ROM");
+set_progress(0.99);
 unmount("/system");
+set_progress(1.0);
+ui_print("---------------------------------------");
+ui_print("All Done!");
+ui_print("Enjoy CROMBi-X!");

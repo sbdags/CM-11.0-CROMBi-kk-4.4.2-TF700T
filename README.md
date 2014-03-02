@@ -5,13 +5,19 @@ CROMBi-X for the TF700
 
 Based off cm-4.4-20140302-crombix4.4.2-tf700t source by lj50036
 
+20140302 changes
+ - Built Aroma Script for main ROM installer
+ - Added new thatv8 kernel for CM11
+ - Updated dropbox to version 2.3.12.10
+ - Updated Terminal Emulator to version 1.0.57
+ 
 20140301 changes
  - Added Browser to RAM script
  - Repacked Browser.apk with debug options on by default for speed - see labs options
- - Added Asus TF701T keyboard as a test (handwriting doesn't work yet)
  - Added CleanTweaks init.d script from CROMi-X 5.4 as a test (need to analyse what is compatible)
  - Updated Terminal Emulator to latest version 
  - Build.Prop tweaks as below
+ 
 # CROMBi-X
 persist.adb.notify=0
 persist.service.adb.enable=1

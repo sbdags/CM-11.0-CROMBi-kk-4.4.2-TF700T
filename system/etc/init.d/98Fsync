@@ -1,3 +1,0 @@
-#!/system/bin/sh
-#Disable FSync
-echo 0 > /sys/module/sync/parameters/fsync_enabled

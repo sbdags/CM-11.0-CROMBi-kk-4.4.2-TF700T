@@ -1,0 +1,205 @@
+﻿##
+# AROMA Installer 2.70 - AROMA Installer Configuration
+#       (c) 2011-2012 by Ahmad Amarullah
+#           amarullz - xda-developers
+#           http://www.amarullz.com/
+#
+#       Binary Version  : 2.70B
+#       Binary Codename : Flamboyan
+##
+#ini_set("force_colorspace","bgra");
+
+#ini_set("force_colorspace","argb");
+
+# Forcing Device Pixelate Size
+# default: floor( min( width, height ) / 160 )
+#
+# Usefull for tablet device, if interface was too big, you can
+# force dp size for smaller UI size.
+#
+ini_set("dp","5");
+#
+
+theme("ics");
+ini_set("rom_name",              "CROMBi-X");
+ini_set("rom_version",           "20140302 DEODEX");
+ini_set("rom_author",            "sbdags/lj50036");
+ini_set("rom_device",            "Asus Transformer TF700T");
+ini_set("rom_date",              "March-02-2014");
+
+splash(
+   3000,
+   "splash"
+);
+
+fontresload( "0", "ttf/Roboto-Regular.ttf;ttf/DroidSansFallback.ttf;", "11" );
+fontresload( "1", "ttf/Roboto-Regular.ttf;ttf/DroidSansFallback.ttf;", "12" );
+
+viewbox(
+    "Welcome",
+    "You are about to flash <b>"+
+	  ini_get("rom_name")+
+	"</b> for the <b>"+sysprop("ro.product.model")+"</b>.\n\n"+
+    
+      "VERSION\t\t\t: <b><#selectbg_g>"+ini_get("rom_version")+"</#></b>\n"+
+      "AUTHOR \t\t\t: <b><#selectbg_g>"+ini_get("rom_author")+"</#></b>\n"+
+	  "DEVICES \t\t\t: <b><#selectbg_g>"+ini_get("rom_device")+"</#></b>\n"+
+      "RELEASED\t\t: <b><#selectbg_g>"+ini_get("rom_date")+"</#></b>\n\n\n"+
+	  
+	  "MODEL\t\t\t: <b><#selectbg_g>"+sysprop("ro.product.model")+"</#></b>\n"+
+      "NAME\t\t\t: <b><#selectbg_g>"+sysprop("ro.product.name")+"</#></b>\n"+
+      "DEVICE\t\t\t: <b><#selectbg_g>"+sysprop("ro.product.device")+"</#></b>\n"+
+      "BOARD\t\t\t: <b><#selectbg_g>"+sysprop("ro.product.board")+"</#></b>\n"+
+      "MANUFACTURER\t: <b><#selectbg_g>"+sysprop("ro.product.manufacturer")+"</#></b>\n"+
+      "CPU\t\t\t\t: <b><#selectbg_g>"+sysprop("ro.product.cpu.abi")+"</#></b>\n\n"+
+      "SYSTEM Size\t\t: <b><#selectbg_g>"+getdisksize("/system","m")+" MB</#></b>\n"+
+        "\tFree\t\t\t: <b><#selectbg_g>"+getdiskfree("/system","m")+" MB</#></b>\n\n"+
+      "DATA Size\t\t: <b><#selectbg_g>"+getdisksize("/data","m")+" MB</#></b>\n"+
+        "\tFree\t\t\t: <b><#selectbg_g>"+getdiskfree("/data","m")+" MB</#></b>\n\n"+
+      "SDCARD Size\t\t: <b><#selectbg_g>"+getdisksize("/external_sdcard","m")+" MB</#></b>\n"+
+        "\tFree\t\t\t: <b><#selectbg_g>"+getdiskfree("/external_sdcard","m")+" MB</#></b>\n\n"+
+	
+    "Press <b>Next</b> to Continue the Installation...\n",
+    "@welcome"
+);
+
+textbox(
+  "Changelog Info",
+  "Changelog",
+  "@update",
+  resread("changelog.txt")
+);
+
+#Flash Options
+menubox(
+  "Pre-Flash Options",
+  "Please select:",
+  "@confirm",
+  "wipe.prop",
+  "Install with Wipe of Dalvik Cache and Cache","RECOMMENDED","@update",
+  "Install with Wipe of only Cache","","@alert",
+  "Exit Back to Recovery","","@welcome"
+
+);
+
+if
+    file_getprop("/tmp/aroma-data/wipe.prop","selected") == "3"
+then
+    exit("");
+endif;
+
+#Kernels
+  selectbox(
+  "Kernel",
+  "Must Choose One!",
+  "@personalize",
+  "kernel.prop",
+
+  "CM11 Stock Kernel","By lj50036",0,
+  "CM11 Modded _that OC Kernel v8","Tweaked for performance. By lj50036/_that",1,
+  "Do Not Flash a Kernel","",0
+
+  );
+
+#DPI
+  selectbox(
+  "DPI Dots Per Inch",
+  "Must Choose One!",
+  "@personalize",
+  "dpi.prop",
+  "240 DPI - Stock Sized Fonts and Icons","",1,
+  "224 DPI - Medium Sized Fonts and Icons","",0,
+  "213 DPI - Medium Small Sized Fonts and Icons","",0,
+  "200 DPI - Small Sized Fonts and Icons","",0,
+  "180 DPI - Smaller Sized Fonts and Icons","",0,
+  "160 DPI - Tiny Sized Fonts and Icons","",0
+
+   );
+
+selectbox(
+  "Boot Animations",
+  "Must Choose One!",
+  "@customize",
+  "boot.prop",
+  "Cyanogen Ring of Fire","",1,
+  "Cyanogen Colors","",0,
+  "Google Nexus Flow","",0
+  
+);
+
+checkbox(
+  "Launchers",
+  "Choose as many as you want!",
+  "@customize",
+  "launcher.prop",
+  "Trebuchet Launcher","",1,
+  "Google Experience Launcher","",1,
+  "Apex Launcher","",0,
+  "Nova Launcher","",0
+  
+);
+
+checkbox(
+  "Misc Apps",
+  "Check the ones you want - Scroll down to see all",
+  "@apps",
+  "misc.prop",
+  
+  "Apps installed to /system/app","","2",
+  "ES File Explorer","",0,
+  "AdAway App","This installs an app for you to control Ads yourself",0,
+  "Keyboard Manager","Keeps correct layout of dock keyboard",0,
+  "Terminal Emulator","",1,
+  
+  "Apps installed to /data/app","","2",
+  "Adobe Flash Player","",1,
+  "Titanium Backup","",0,  
+  "DropBox","",0
+
+);
+
+checkbox(
+  "Tweaks and Scripts",
+  "Check the ones you want",
+  "@personalize",
+  "tweak.prop",
+
+	"Tweaks","","2",
+	"Browser2Ram","Speeds up Stock, Chrome, Firefox, Dolphin & 15 other Browsers","1",
+	"Ad Block Hosts File","This installs a file that blocks most Ads","1",
+	"IO Tweak: Disable fsync","Speeds up IO read/writes to internal SD but can cause data corruption","0",
+	"Zip Align Apps","Script to optimize /data apk files internally","0",
+	"Xposed Framework","Allows GUI and Framework Tweaking via Add On Modules","1",
+	"GPU Rendering : Disable Software Rendering","Experimental - Forces rendering to be done by GPU rather than software","0"
+
+);
+
+ini_set("text_next", "Install now");
+
+viewbox(
+  "Ready to install",
+  "You are now ready to begin installation.\n\n"+
+  "Press <b>Install now</b> to start.\n\n"+
+  "If you want to review or change any of your installation settings, press <b>Back</b>.",
+  "@install"
+  
+);
+
+ini_set("text_next", "Next");
+
+install(
+  "Installing",
+  "Installing CROMBi-X...\nPlease Wait until it Finishes...",
+  "@install"
+  
+);
+ini_set("text_next", "Finish");
+
+viewbox(
+  "Installation Completed",
+  "<b><#selectbg_g>Congratulations...</#></b>\n\n"+
+  "CROMBi-X has been installed successfully.\n\n"+
+  "Press Finish, Reboot and Inherit!\n\nEnjoy your tablet!",
+  "@info"
+  
+);
