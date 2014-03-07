@@ -1,27 +1,66 @@
-# CROMI Installer
+# CROMBi Installer
 set_progress(0.00);
-ui_print("Thank you for installing CROMBi-X JB 4.4.2!");
+ui_print("Thank you for installing CROMBi-kk KitKat 4.4.2!");
 ui_print("Sit back and relax...");
 ui_print("-----------------------------------------------------");
 ui_print("This will take a few minutes!");
 
 show_progress(0.99, 1600);
-ui_print("Preparing File System...");
-package_extract_dir("prep", "/tmp");
+ui_print("Preparing File System.....");
+package_extract_dir("extras/prep", "/tmp");
 set_perm_recursive(0, 0, 0755, 0755, "/tmp");
 
-ui_print("Formatting System....");
+ui_print("Unmounting /system, /data and /cache.....");
+unmount("/system");
+unmount("/data");
+unmount("/cache");
+
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "2"
+then
+	ui_print("----- DATA2SD by _that@xda -----");
+	ui_print("Extracting.....");
+	package_extract_dir("extras/data2sd/script", "/tmp");
+	set_perm(0, 0, 0755, "/tmp/dev-data2sd.sh");
+	ui_print("Running script for DATA2SD");
+	run_program("/tmp/dev-data2sd.sh");
+endif;
+
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "3"
+then
+	ui_print("----- ROM2SD by _that@xda -----");
+	ui_print("Extracting.....");
+	package_extract_dir("extras/rom2sd/script", "/tmp");
+	set_perm(0, 0, 0755, "/tmp/dev-rom2sd.sh");
+	ui_print("Installing pre-init script for ROM2SD");
+	package_extract_dir("extras/rom2sd/system", "/system");
+	set_perm(0, 0, 0744, "/system/boot/preinit");
+	ui_print("Running script for ROM2SD");
+	run_program("/tmp/dev-rom2sd.sh");
+endif;
+
+ui_print("Formatting System.....");
 format("ext4", "EMMC", "/dev/block/mmcblk0p1", "0", "/system");
 mount("ext4", "EMMC", "/dev/block/mmcblk0p1", "/system");
+
+ui_print("Tuning System.....");
+run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p1");
+ui_print("Tuning Cache.....");
+run_program("/tmp/tune2fs.ext4", "-O", "^has_journal", "/dev/block/mmcblk0p2");
+
+if
+	file_getprop("/tmp/aroma-data/journal.prop","selected.0") == "1"
+then
+	ui_print("Tuning Data - Data Journaling Enabled.....");
+	run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p8");
+else
+	ui_print("Tuning Data - Data Journaling Disabled.....");
+	run_program("/tmp/tune2fs.ext4", "-O", "^has_journal", "/dev/block/mmcblk0p8");
+endif;
+
 mount("ext4", "EMMC", "/dev/block/mmcblk0p2", "/cache");
 mount("ext4", "EMMC", "/dev/block/mmcblk0p8", "/data");
-
-ui_print("Tuning System....");
-run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p1");
-ui_print("Tuning Cache....");
-run_program("/tmp/tune2fs.ext4", "-O", "^has_journal", "/dev/block/mmcblk0p2");
-ui_print("Tuning Data....");
-run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p8");
 
 if
     file_getprop("/tmp/aroma-data/wipe.prop","selected") == "1"
@@ -50,12 +89,19 @@ endif;
 if
 	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "2"
 then
-	ui_print(" - lj50036 / _that's CM11 Modded Kernel");
+	ui_print(" - lj50036 / _that / sbdags' Asus Modded Kernel");
 	package_extract_dir("extras/kernel/sbcm11/system", "/system");
-	package_extract_file("ljthat8.blob", "/dev/block/mmcblk0p4");
+	package_extract_file("ljthat8sb.blob", "/dev/block/mmcblk0p4");
 endif;
 if
 	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "3"
+then
+	ui_print(" - Hunds Modded OC Kernel");
+	package_extract_dir("extras/kernel/hundscm11/system", "/system");
+	package_extract_file("hundscm11.blob", "/dev/block/mmcblk0p4");
+endif;
+if
+	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "4"
 then
 	ui_print(" - No Kernel to Flash");
 endif;
@@ -233,7 +279,7 @@ if
     file_getprop("/tmp/aroma-data/tweak.prop","item.1.5") == "1"
 then
 	ui_print(" - Xposed App installed");
-    package_extract_dir("tweak/xposed/system", "/system");
+    package_extract_dir("extras/tweak/xposed/system", "/system");
 	delete("/data/app/com.ceco.gm2.gravitybox-2.apk");
 	package_extract_dir("extras/tweak/xposed/data", "/data");
 	package_extract_dir("extras/tweak/xposed/sdcard", "/sdcard");
@@ -421,21 +467,46 @@ delete("/system/bin/backuptool.sh");
 delete("/system/bin/backuptool.functions");
 
 #Install CROMBi-X System
-ui_print("Installing CROMBi-X System...");
-package_extract_dir("extras/crombix/system", "/system");
-package_extract_dir("extras/crombix/build-prop", "/tmp");
-set_perm(0, 0, 0777, "/tmp/crombix-build-prop.sh");
-run_program ("/tmp/crombix-build-prop.sh");
+ui_print("Installing CROMBi-kk System.....");
+package_extract_dir("extras/crombikk/system", "/system");
+package_extract_dir("extras/crombikk/build-prop", "/tmp");
+set_perm(0, 0, 0777, "/tmp/crombikk-build-prop.sh");
+run_program ("/tmp/crombikk-build-prop.sh");
 
 #-- DPI --#
 ui_print("Installing build.prop");
 set_perm(0, 0, 0777, "/tmp/upd-build-prop.sh");
 run_program ("/tmp/upd-build-prop.sh");
 
-ui_print("Finalising ROM");
 set_progress(0.99);
+
+#-- DATA2SD Preinit --#
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "2"
+then
+	ui_print("Installing pre-init script for DATA2SD");
+	run_program("/tmp/dev-data2sd.sh");
+	package_extract_dir("extras/data2sd/system", "/system");
+	set_perm(0, 0, 0744, "/system/boot/preinit");
+endif;
+
+#-- ROM2SD preinit --#
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "3"
+then
+	ui_print("Extracting kernel ramdisk.....");
+	package_extract_dir("extras/rom2sd/bin", "/tmp");
+	set_perm(0, 0, 0755, "/tmp/extract-ramdisk");
+	set_perm(0, 0, 0755, "/tmp/extract-ramdisk.sh");
+	run_program("/tmp/extract-ramdisk.sh");
+	ui_print("Reverting back to internal setup.....");
+	run_program("/tmp/dev-rom2sd.sh");
+endif;
+
+ui_print("Finalising ROM.....");
+unmount("/data");
 unmount("/system");
 set_progress(1.0);
 ui_print("---------------------------------------");
 ui_print("All Done!");
-ui_print("Enjoy CROMBi-X!");
+ui_print("Enjoy CROMBi-kk!");

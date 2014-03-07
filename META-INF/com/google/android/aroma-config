@@ -21,11 +21,11 @@ ini_set("dp","5");
 #
 
 theme("ics");
-ini_set("rom_name",              "CROMBi-X");
-ini_set("rom_version",           "20140302 DEODEX");
+ini_set("rom_name",              "CROMBi-kk");
+ini_set("rom_version",           "20140306 DEODEX");
 ini_set("rom_author",            "sbdags/lj50036");
 ini_set("rom_device",            "Asus Transformer TF700T");
-ini_set("rom_date",              "March-02-2014");
+ini_set("rom_date",              "March-06-2014");
 
 splash(
    3000,
@@ -70,6 +70,25 @@ textbox(
   resread("changelog.txt")
 );
 
+#ROM2SD Options
+menubox(
+  "ROM Type Options",
+  "Please select:",
+  "@confirm",
+  "rom2sd.prop",
+  "Install Normal version of CROMBi-kk","","@update",
+  "Install Data2sd version of CROMBi-kk","","@alert",
+  "Install Rom2sd version of CROMBi-kk","","@alert",
+  "Exit Back to Recovery","","@welcome"
+
+);
+
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "4"
+then
+    exit("");
+endif;
+
 #Flash Options
 menubox(
   "Pre-Flash Options",
@@ -77,16 +96,9 @@ menubox(
   "@confirm",
   "wipe.prop",
   "Install with Wipe of Dalvik Cache and Cache","RECOMMENDED","@update",
-  "Install with Wipe of only Cache","","@alert",
-  "Exit Back to Recovery","","@welcome"
+  "Install with Wipe of only Cache","","@alert"
 
 );
-
-if
-    file_getprop("/tmp/aroma-data/wipe.prop","selected") == "3"
-then
-    exit("");
-endif;
 
 #Kernels
   selectbox(
@@ -96,8 +108,21 @@ endif;
   "kernel.prop",
 
   "CM11 Stock Kernel","By lj50036",0,
-  "CM11 Modded _that OC Kernel v8","Tweaked for performance. By lj50036/_that",1,
+  "_that Modded Asus OC Kernel v8","Tweaked for performance. By lj50036/_that/sbdags",1,
+  "Hunds Modded _that OC Kernel v3.4.5","Tweaked for performance. By hundsbuah/sbdags",0,
   "Do Not Flash a Kernel","",0
+
+  );
+  
+#Journaling
+  selectbox(
+  "Data Journaling",
+  "Must Choose One!",
+  "@personalize",
+  "journal.prop",
+
+  "Enable Data Journaling","Default - Prevents data loss if there is an unclean shutdown",1,
+  "Disable Data Journaling","WARNING : Can cause data corruption! Don't power off suddenly",0
 
   );
 
@@ -189,7 +214,7 @@ ini_set("text_next", "Next");
 
 install(
   "Installing",
-  "Installing CROMBi-X...\nPlease Wait until it Finishes...",
+  "Installing CROMBi-kk...\nPlease Wait until it Finishes...",
   "@install"
   
 );
@@ -198,7 +223,7 @@ ini_set("text_next", "Finish");
 viewbox(
   "Installation Completed",
   "<b><#selectbg_g>Congratulations...</#></b>\n\n"+
-  "CROMBi-X has been installed successfully.\n\n"+
+  "CROMBi-kk has been installed successfully.\n\n"+
   "Press Finish, Reboot and Inherit!\n\nEnjoy your tablet!",
   "@info"
   

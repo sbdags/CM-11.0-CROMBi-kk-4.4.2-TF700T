@@ -1,0 +1,39 @@
+#!/system/bin/sh
+
+# preinit: only /sys and /system are mounted (ro), / is still rw
+
+PATH=/sbin:/system/bin:/system/xbin
+echo "PATH=/sbin:/system/bin:/system/xbin"
+
+# auto-detect data2sd
+if [ -d /sys/block/mmcblk1/mmcblk1p3 ]; then
+  echo "\nsystem/boot/preinit: mmcblk1p3 detected, setting up for ROM2SD.\n"
+  mkdir /datai
+  echo "mkdir /datai"
+  mkdir /systemi
+  echo "mkdir /systemi"
+  mkdir /systemx
+  echo "mkdir /systemx"
+  mknod /dev/mmcblk1p3 b 179 51
+  echo "mknod /dev/mmcblk1p3 b 179 51"
+  mount -t ext4 /dev/mmcblk1p3 /systemx
+  echo "mount -t ext4 /dev/mmcblk1p3 /systemx"
+  cp -a /systemx/boot/ramdisk/* /
+  echo "cp -a /systemx/boot/ramdisk/* /"
+  umount /systemx
+  echo "umount /systemx"
+  rm /dev/mmcblk1p3
+  echo "rm /dev/mmcblk1p3"
+  rmdir /systemx
+  echo "rmdir /systemx"
+elif [ -d /sys/block/mmcblk1/mmcblk1p2 ]; then
+  echo "\nsystem/boot/preinit: mmcblk1p2 detected, setting up for Data2SD.\n"
+  mkdir /datai
+  cp /system/boot/rootfs_data2sd/* /
+else
+  cp /system/boot/rootfs/* /
+  echo "cp /system/boot/rootfs/* /"
+fi
+
+#/system/boot/preshell
+echo "/system/boot/preshell"

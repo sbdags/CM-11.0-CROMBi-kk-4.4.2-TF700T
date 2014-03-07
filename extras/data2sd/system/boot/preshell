@@ -1,0 +1,28 @@
+#!/system/bin/sh
+
+PATH=/sbin:/system/bin:/system/xbin
+
+if [ "$(cat /sys/class/switch/dock/state)" == "10" ]; then
+	# docked - enter pre-init shell
+	echo "\nDock detected, entering shell!\n"
+
+	mount -t proc proc /proc
+
+	# populate /dev
+	/sbin/ueventd &
+	sleep 1
+
+	mount -t ext4 /dev/block/mmcblk0p8 /data
+
+	echo "\n\n\nType Ctrl+D to exit to Android.\n"
+
+#	/system/bin/sh
+	setsid sh -c 'exec /system/bin/sh </dev/tty1 >/dev/tty1 2>&1'
+
+	umount /data
+
+	# will be restarted by init
+	killall ueventd
+fi
+
+echo "system/boot/preshell: booting Android"

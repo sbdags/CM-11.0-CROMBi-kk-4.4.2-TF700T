@@ -1,9 +1,34 @@
-<b><#selectbg_g>CROMBi-X Changelog:</#></b>
-<b><#selectbg_g>03/02/2014 CROMBi-X Full ROM</#></b>
+﻿<b><#selectbg_g>CROMBi-kk Changelog:</#></b>
+<b><#selectbg_g>06/03/2014 CROMBi-kk Full ROM</#></b>
 =====================================
+Based off cm-4.4-20140302-crombikk4.4.2-tf700t source by lj50036
 
-Based off cm-4.4-20140302-crombix4.4.2-tf700t source by lj50036
-
+20140306 changes
+ - Updated GravityBox to version 2.9.8
+ - Final tidy up of ROM and scripts for release
+ 
+20140305 changes
+ - Fixed the ROM2SD booting issues - thanks _that!
+ - New extract ramdisk script to solve the above
+ - Repacked the 2 CM11 kernels with thatv9 init binary which fixes empty last_kmsg issues
+ - Remixed Hunds 3.4.5 OC kernel with CM11 ramdisk - experimental not sure it works well
+ - Updated Titanium Backup to version 6.1.5.4
+ 
+20140304 changes
+ - Added ROM2SD and DATA2SD scripting to installer
+ - Updated the stock CM11 kernel to include pre-init scripting - enables Data2sd & Rom2sd
+ - Updated Apex Launcher to version 2.30
+ - Removed CM11 _that kernel for now as wifi non functional due to missing modules during compilation
+ - Added script to upgrade build.prop from CROMBi-X to CROMBi-kk
+ 
+20140303 changes
+ - Fixed Xposed not installing properly
+ - Added Asus _that kernel repacked with CM11 ramdisk and preinit compatibility
+ - Fixed missing modules from lj50036 & _that kernel
+ - Fixed Nexus Flow Bootanimation finishing too early
+ - Added phab7 as a test
+ - ROM name changed to CROMBi-kk
+ 
 20140302 changes
  - Built Aroma Script for main ROM installer
  - Added new thatv8 kernel for CM11
@@ -14,7 +39,7 @@ Based off cm-4.4-20140302-crombix4.4.2-tf700t source by lj50036
  - Added Browser to RAM script
  - Repacked Browser.apk with debug options on by default for speed - see labs options
  - Added CleanTweaks init.d script from CROMi-X 5.4 as a test (need to analyse what is compatible)
- - Build.Prop tweaks as below
+ - Build.Prop tweaks from CROMiX
  
 # CROMBi-X
 persist.adb.notify=0
