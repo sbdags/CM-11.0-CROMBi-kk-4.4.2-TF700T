@@ -26,6 +26,7 @@ if [ -d /sys/block/mmcblk1/mmcblk1p3 ]; then
   echo "rm /dev/mmcblk1p3"
   rmdir /systemx
   echo "rmdir /systemx"
+  cp /system/boot/rootfs_rom2sd/* /
 elif [ -d /sys/block/mmcblk1/mmcblk1p2 ]; then
   echo "\nsystem/boot/preinit: mmcblk1p2 detected, setting up for Data2SD.\n"
   mkdir /datai
@@ -36,4 +37,6 @@ else
 fi
 
 #/system/boot/preshell
-echo "/system/boot/preshell"
+# echo "/system/boot/preshell"
+#ls -l /init*
+#echo "ls -l /init*"

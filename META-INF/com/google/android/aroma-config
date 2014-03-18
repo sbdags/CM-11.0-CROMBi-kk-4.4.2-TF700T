@@ -22,18 +22,18 @@ ini_set("dp","5");
 
 theme("ics");
 ini_set("rom_name",              "CROMBi-kk");
-ini_set("rom_version",           "20140306 DEODEX");
+ini_set("rom_version",           "CM11-20140317-DEODEX");
 ini_set("rom_author",            "sbdags/lj50036");
 ini_set("rom_device",            "Asus Transformer TF700T");
-ini_set("rom_date",              "March-06-2014");
+ini_set("rom_date",              "March-17-2014");
 
 splash(
-   3000,
+   4000,
    "splash"
 );
 
-fontresload( "0", "ttf/Roboto-Regular.ttf;ttf/DroidSansFallback.ttf;", "11" );
-fontresload( "1", "ttf/Roboto-Regular.ttf;ttf/DroidSansFallback.ttf;", "12" );
+fontresload( "0", "ttf/Roboto-Regular.ttf;ttf/DroidSansFallback.ttf;", "10" );
+fontresload( "1", "ttf/Roboto-Regular.ttf;ttf/DroidSansFallback.ttf;", "11" );
 
 viewbox(
     "Welcome",
@@ -54,7 +54,7 @@ viewbox(
       "CPU\t\t\t\t: <b><#selectbg_g>"+sysprop("ro.product.cpu.abi")+"</#></b>\n\n"+
       "SYSTEM Size\t\t: <b><#selectbg_g>"+getdisksize("/system","m")+" MB</#></b>\n"+
         "\tFree\t\t\t: <b><#selectbg_g>"+getdiskfree("/system","m")+" MB</#></b>\n\n"+
-      "DATA Size\t\t: <b><#selectbg_g>"+getdisksize("/data","m")+" MB</#></b>\n"+
+      "DATA Size\t\t\t: <b><#selectbg_g>"+getdisksize("/data","m")+" MB</#></b>\n"+
         "\tFree\t\t\t: <b><#selectbg_g>"+getdiskfree("/data","m")+" MB</#></b>\n\n"+
       "SDCARD Size\t\t: <b><#selectbg_g>"+getdisksize("/external_sdcard","m")+" MB</#></b>\n"+
         "\tFree\t\t\t: <b><#selectbg_g>"+getdiskfree("/external_sdcard","m")+" MB</#></b>\n\n"+
@@ -77,8 +77,8 @@ menubox(
   "@confirm",
   "rom2sd.prop",
   "Install Normal version of CROMBi-kk","","@update",
-  "Install Data2sd version of CROMBi-kk","","@alert",
-  "Install Rom2sd version of CROMBi-kk","","@alert",
+  "Install Data2sd version of CROMBi-kk","Will force _thatv8 data2sd kernel","@alert",
+  "Install Rom2sd version of CROMBi-kk","NOTE: Only works if CROMi-X on internal currently","@alert",
   "Exit Back to Recovery","","@welcome"
 
 );
@@ -101,19 +101,23 @@ menubox(
 );
 
 #Kernels
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") != "2"
+then
   selectbox(
   "Kernel",
   "Must Choose One!",
   "@personalize",
   "kernel.prop",
 
-  "CM11 Stock Kernel","By lj50036",0,
+  "CM11 Stock Kernel","By lj50036/sbdags",0,
   "_that Modded Asus OC Kernel v8","Tweaked for performance. By lj50036/_that/sbdags",1,
-  "Hunds Modded _that OC Kernel v3.4.5","Tweaked for performance. By hundsbuah/sbdags",0,
+  "Hunds Modded OC Kernel v3.4.5","Extreme Tweaked for performance. By hundsbuah/LMK/sbdags",0,
   "Do Not Flash a Kernel","",0
 
   );
-  
+endif;
+
 #Journaling
   selectbox(
   "Data Journaling",
@@ -148,6 +152,7 @@ selectbox(
   "boot.prop",
   "Cyanogen Ring of Fire","",1,
   "Cyanogen Colors","",0,
+  "Cyanogen Stock","",0,
   "Google Nexus Flow","",0
   
 );
@@ -158,7 +163,7 @@ checkbox(
   "@customize",
   "launcher.prop",
   "Trebuchet Launcher","",1,
-  "Google Experience Launcher","",1,
+  "Google Experience Launcher","",0,
   "Apex Launcher","",0,
   "Nova Launcher","",0
   
@@ -171,13 +176,13 @@ checkbox(
   "misc.prop",
   
   "Apps installed to /system/app","","2",
-  "ES File Explorer","",0,
-  "AdAway App","This installs an app for you to control Ads yourself",0,
+  "ES File Explorer","",1,
+  "AdAway App","This installs an app for you to control Ads yourself",1,
   "Keyboard Manager","Keeps correct layout of dock keyboard",0,
   "Terminal Emulator","",1,
   
   "Apps installed to /data/app","","2",
-  "Adobe Flash Player","",1,
+  "Dolphin Browser with Adobe Flash Player","",1,
   "Titanium Backup","",0,  
   "DropBox","",0
 
@@ -194,8 +199,9 @@ checkbox(
 	"Ad Block Hosts File","This installs a file that blocks most Ads","1",
 	"IO Tweak: Disable fsync","Speeds up IO read/writes to internal SD but can cause data corruption","0",
 	"Zip Align Apps","Script to optimize /data apk files internally","0",
-	"Xposed Framework","Allows GUI and Framework Tweaking via Add On Modules","1",
-	"GPU Rendering : Disable Software Rendering","Experimental - Forces rendering to be done by GPU rather than software","0"
+	"Xposed Framework","DISABLES ART. Allows GUI and Framework Tweaking via Add On Modules","0",
+	"GPU Rendering 1: Force GPU Rendering","Experimental - Forces use of GPU for 2D drawing ","0",
+	"GPU Rendering 2: Disable Software Rendering","Experimental - Forces rendering to be done by GPU rather than software","0"
 
 );
 

@@ -1,5 +1,6 @@
 #!/sbin/sh
-sed -i 's,crombix,crombikk,g' /system/build.prop
+sed -i 's,-20140314-,-20140317-,g' /system/build.prop
+sed -i 's,wifi.supplicant_scan_interval=15,wifi.supplicant_scan_interval=60,g' /system/build.prop
 sed -i '/dalvik.vm.dexopt-flags=m=y/d' /system/build.prop
 sed -i '/ro.sf.lcd_density=240/d' /system/build.prop
 echo "" >> /system/build.prop
@@ -12,8 +13,8 @@ echo "ro.kernel.android.checkjni=0" >> /system/build.prop
 echo "" >> /system/build.prop
 echo "# Improve Touch Pressure" >> /system/build.prop
 echo "touch.pressure.scale=0.001" >> /system/build.prop
-echo "ro.min.fling_velocity=15000" >> /system/build.prop
-echo "ro.max.fling_velocity=35000" >> /system/build.prop
+echo "ro.min.fling_velocity=30000" >> /system/build.prop
+echo "ro.max.fling_velocity=60000" >> /system/build.prop
 echo "" >> /system/build.prop
 echo "# Battery savers" >> /system/build.prop
 echo "ro.ril.disable.power.collapse=0" >> /system/build.prop

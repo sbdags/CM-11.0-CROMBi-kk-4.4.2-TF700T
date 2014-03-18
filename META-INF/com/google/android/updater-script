@@ -10,52 +10,78 @@ ui_print("Preparing File System.....");
 package_extract_dir("extras/prep", "/tmp");
 set_perm_recursive(0, 0, 0755, 0755, "/tmp");
 
-ui_print("Unmounting /system, /data and /cache.....");
-unmount("/system");
-unmount("/data");
-unmount("/cache");
+ui_print("Mounting /system.....");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p1", "/system");
 
+# Mount Data2sd
 if
     file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "2"
 then
 	ui_print("----- DATA2SD by _that@xda -----");
 	ui_print("Extracting.....");
+	package_extract_dir("extras/data2sd/type", "/tmp");
 	package_extract_dir("extras/data2sd/script", "/tmp");
 	set_perm(0, 0, 0755, "/tmp/dev-data2sd.sh");
+	unmount("/data");
 	ui_print("Running script for DATA2SD");
 	run_program("/tmp/dev-data2sd.sh");
 endif;
 
+#Mount Rom2sd
 if
     file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "3"
 then
 	ui_print("----- ROM2SD by _that@xda -----");
-	ui_print("Extracting.....");
-	package_extract_dir("extras/rom2sd/script", "/tmp");
-	set_perm(0, 0, 0755, "/tmp/dev-rom2sd.sh");
 	ui_print("Installing pre-init script for ROM2SD");
 	package_extract_dir("extras/rom2sd/system", "/system");
 	set_perm(0, 0, 0744, "/system/boot/preinit");
+	ui_print("Extracting.....");
+	package_extract_dir("extras/rom2sd/type", "/tmp");
+	package_extract_dir("extras/rom2sd/script", "/tmp");
+	set_perm(0, 0, 0755, "/tmp/dev-rom2sd.sh");
+	unmount("/system");
+	unmount("/data");
 	ui_print("Running script for ROM2SD");
 	run_program("/tmp/dev-rom2sd.sh");
 endif;
 
-ui_print("Formatting System.....");
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "1"
+then
+	package_extract_dir("extras/type", "/tmp");
+endif;
+
+# Backup CM11 addons
+ui_print("Backing up.....");
+ui_print("Remounting /system.....");
+mount("ext4", "EMMC", "/dev/block/mmcblk0p1", "/system");
+package_extract_file("system/bin/backuptool.sh", "/tmp/backuptool.sh");
+package_extract_file("system/bin/backuptool.functions", "/tmp/backuptool.functions");
+set_perm(0, 0, 0777, "/tmp/backuptool.sh");
+set_perm(0, 0, 0644, "/tmp/backuptool.functions");
+run_program("/tmp/backuptool.sh", "backup");
+
+ui_print("Unmounting /system, /data and /cache.....");
+unmount("/system");
+unmount("/data");
+unmount("/cache");
+
+ui_print("Formatting /system.....");
 format("ext4", "EMMC", "/dev/block/mmcblk0p1", "0", "/system");
 mount("ext4", "EMMC", "/dev/block/mmcblk0p1", "/system");
 
-ui_print("Tuning System.....");
+ui_print("Tuning /system.....");
 run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p1");
-ui_print("Tuning Cache.....");
+ui_print("Tuning /cache.....");
 run_program("/tmp/tune2fs.ext4", "-O", "^has_journal", "/dev/block/mmcblk0p2");
 
 if
 	file_getprop("/tmp/aroma-data/journal.prop","selected.0") == "1"
 then
-	ui_print("Tuning Data - Data Journaling Enabled.....");
+	ui_print("Tuning /data - Journaling Enabled.....");
 	run_program("/tmp/tune2fs.ext4", "-O", "+has_journal", "-o", "+journal_data_writeback", "/dev/block/mmcblk0p8");
 else
-	ui_print("Tuning Data - Data Journaling Disabled.....");
+	ui_print("Tuning /data - Journaling Disabled.....");
 	run_program("/tmp/tune2fs.ext4", "-O", "^has_journal", "/dev/block/mmcblk0p8");
 endif;
 
@@ -65,45 +91,63 @@ mount("ext4", "EMMC", "/dev/block/mmcblk0p8", "/data");
 if
     file_getprop("/tmp/aroma-data/wipe.prop","selected") == "1"
 then
-    ui_print("Wiping Dalvik Cache.....");
+    ui_print("Wiping /data/dalvik-cache.....");
     delete_recursive("/data/dalvik-cache");
 endif;
-ui_print("Wiping Cache.....");
+ui_print("Wiping /cache.....");
 delete_recursive("/cache");
 
 #Install System
-ui_print("Installing Core System...");
+ui_print("Installing Core System.....");
 package_extract_dir("system", "/system");
 
-ui_print("Installing Options...");
+#Install CROMBi-X System
+ui_print("Installing CROMBi-kk System Tweaks.....");
+package_extract_dir("extras/crombikk/system", "/system");
+package_extract_dir("extras/crombikk/build-prop", "/tmp");
+set_perm(0, 0, 0777, "/tmp/crombikk-build-prop.sh");
+run_program ("/tmp/crombikk-build-prop.sh");
+
+ui_print("Installing Options.....");
 #-- Kernel --#
 ui_print("Kernel Preparation");
+if
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") != "2"
+then
+	if
+		file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "1"
+	then
+		ui_print(" - lj50036's CM11 Kernel");
+		package_extract_dir("extras/kernel/ljcm11/system", "/system");
+		package_extract_file("ljcm113.blob", "/dev/block/mmcblk0p4");
+	endif;
+	if
+		file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "2"
+	then
+		ui_print(" - lj50036 / _that / sbdags' Asus Modded Kernel");
+		package_extract_dir("extras/kernel/sbcm11/system", "/system");
+		package_extract_file("ljthat8sb4.blob", "/dev/block/mmcblk0p4");
+	endif;
+	if
+		file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "3"
+	then
+		ui_print(" - Hunds Modded OC Extreme Kernel");
+		package_extract_dir("extras/kernel/hundscm11/system", "/system");
+		package_extract_file("hundscm113.blob", "/dev/block/mmcblk0p4");
+	endif;
+	if
+		file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "4"
+	then
+		ui_print(" - No Kernel to Flash");
+	endif;
+endif;
 
 if
-	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "1"
+    file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "2"
 then
-	ui_print(" - lj50036's CM11 Kernel");
-	package_extract_dir("extras/kernel/ljcm11/system", "/system");
-	package_extract_file("ljcm11.blob", "/dev/block/mmcblk0p4");
-endif;
-if
-	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "2"
-then
-	ui_print(" - lj50036 / _that / sbdags' Asus Modded Kernel");
+	ui_print(" - lj50036 / _that / sbdags' Data2SD Kernel");
 	package_extract_dir("extras/kernel/sbcm11/system", "/system");
-	package_extract_file("ljthat8sb.blob", "/dev/block/mmcblk0p4");
-endif;
-if
-	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "3"
-then
-	ui_print(" - Hunds Modded OC Kernel");
-	package_extract_dir("extras/kernel/hundscm11/system", "/system");
-	package_extract_file("hundscm11.blob", "/dev/block/mmcblk0p4");
-endif;
-if
-	file_getprop("/tmp/aroma-data/kernel.prop","selected.0") == "4"
-then
-	ui_print(" - No Kernel to Flash");
+	package_extract_file("ljthatsbd2.blob", "/dev/block/mmcblk0p4");
 endif;
 
 #-- DPI --#
@@ -163,6 +207,12 @@ then
 endif;
 if
     file_getprop("/tmp/aroma-data/boot.prop","selected.0") == "3"
+then
+	ui_print(" - Cyanogen Stock");
+    package_extract_dir("extras/boot/cmstock", "/system");
+endif;
+if
+    file_getprop("/tmp/aroma-data/boot.prop","selected.0") == "4"
 then
 	ui_print(" - Google Nexus");
     package_extract_dir("extras/boot/nexusflow", "/system");
@@ -226,8 +276,10 @@ endif;
 if
     file_getprop("/tmp/aroma-data/misc.prop","item.2.1") == "1"
 then
-	ui_print(" - Adobe Flash");
+	ui_print(" - Dolphin Browser with Adobe Flash");
 	delete("/data/app/com.adobe.flashplayer-2.apk");
+	delete("/data/app/com.dolphin.browser.engine-2.apk");
+	delete("/data/app/mobi.mgeek.TunnyBrowser-2.apk");
     package_extract_dir("extras/misc/flash", "/data");
 endif;
 if
@@ -287,11 +339,21 @@ endif;
 if
     file_getprop("/tmp/aroma-data/tweak.prop","item.1.6") == "1"
 then
-	ui_print(" - Sotfware Rendering disabled");
+	ui_print(" - Force GPU 2D Rendering");
 	package_extract_dir("extras/tweak/gpu/script", "/tmp");
 	run_program ("/sbin/sh", "/tmp/force-gpu.sh");
+endif;
+if
+    file_getprop("/tmp/aroma-data/tweak.prop","item.1.7") == "1"
+then
+	ui_print(" - Software Rendering disabled");
     package_extract_dir("extras/tweak/gpu/system", "/system");
 endif;
+
+#-- DPI --#
+ui_print("Installing build.prop");
+set_perm(0, 0, 0777, "/tmp/upd-build-prop.sh");
+run_program ("/tmp/upd-build-prop.sh");
 
 #Build Sym Links#
 ui_print("");
@@ -458,6 +520,7 @@ set_metadata("/system/xbin/procmem", "uid", 0, "gid", 0, "mode", 06755, "capabil
 set_metadata("/system/xbin/procrank", "uid", 0, "gid", 0, "mode", 06755, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 set_metadata("/system/xbin/su", "uid", 0, "gid", 0, "mode", 06755, "capabilities", 0x0, "selabel", "u:object_r:su_exec:s0");
 
+# CM Restore
 package_extract_file("system/bin/backuptool.sh", "/tmp/backuptool.sh");
 package_extract_file("system/bin/backuptool.functions", "/tmp/backuptool.functions");
 set_perm(0, 0, 0777, "/tmp/backuptool.sh");
@@ -466,28 +529,20 @@ run_program("/tmp/backuptool.sh", "restore");
 delete("/system/bin/backuptool.sh");
 delete("/system/bin/backuptool.functions");
 
-#Install CROMBi-X System
-ui_print("Installing CROMBi-kk System.....");
-package_extract_dir("extras/crombikk/system", "/system");
-package_extract_dir("extras/crombikk/build-prop", "/tmp");
-set_perm(0, 0, 0777, "/tmp/crombikk-build-prop.sh");
-run_program ("/tmp/crombikk-build-prop.sh");
-
-#-- DPI --#
-ui_print("Installing build.prop");
-set_perm(0, 0, 0777, "/tmp/upd-build-prop.sh");
-run_program ("/tmp/upd-build-prop.sh");
-
 set_progress(0.99);
+ui_print("Finalising ROM.....");
 
 #-- DATA2SD Preinit --#
 if
     file_getprop("/tmp/aroma-data/rom2sd.prop","selected") == "2"
 then
-	ui_print("Installing pre-init script for DATA2SD");
 	run_program("/tmp/dev-data2sd.sh");
+	ui_print("Installing pre-init script for DATA2SD");
 	package_extract_dir("extras/data2sd/system", "/system");
 	set_perm(0, 0, 0744, "/system/boot/preinit");
+	ui_print("==*******************************************************==");
+	ui_print("==*RECOVERY LEFT IN DATA2SD MODE UNTIL REBOOT*==");
+	ui_print("==*******************************************************==");
 endif;
 
 #-- ROM2SD preinit --#
@@ -499,11 +554,13 @@ then
 	set_perm(0, 0, 0755, "/tmp/extract-ramdisk");
 	set_perm(0, 0, 0755, "/tmp/extract-ramdisk.sh");
 	run_program("/tmp/extract-ramdisk.sh");
-	ui_print("Reverting back to internal setup.....");
-	run_program("/tmp/dev-rom2sd.sh");
+	ui_print("==*******************************************************==");
+	ui_print("==*RECOVERY LEFT IN ROM2SD MODE UNTIL REBOOT*==");
+	ui_print("==*******************************************************==");
+	#ui_print("Reverting back to internal setup.....");
+	#run_program("/tmp/dev-rom2sd.sh");
 endif;
 
-ui_print("Finalising ROM.....");
 unmount("/data");
 unmount("/system");
 set_progress(1.0);

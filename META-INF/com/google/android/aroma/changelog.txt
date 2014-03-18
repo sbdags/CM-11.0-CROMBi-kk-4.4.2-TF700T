@@ -1,8 +1,58 @@
 ﻿<b><#selectbg_g>CROMBi-kk Changelog:</#></b>
-<b><#selectbg_g>06/03/2014 CROMBi-kk Full ROM</#></b>
+<b><#selectbg_g>17/03/2014 CROMBi-kk Full ROM</#></b>
 =====================================
-Based off cm-4.4-20140302-crombikk4.4.2-tf700t source by lj50036
-
+Based off cm-4.4-20140314-crombikk4.4.2-tf700t source by lj50036
+20140317 changes
+ - Fixed the CPU frequencies for all kernels (init.cardhu.cpu.rc in ramdisk)
+ - Changed the wifi scan interval to 60 secs from 15 secs
+ 
+20140316 changes
+ - Rebuilt from new base from lj50036 - Includes dock fixes (java) from CM11 source
+ - Repacked _thatv8 kernel with updated init and init.cardhu.cpu.rc for better cpu mode support
+ - Repacked Hunds 3.4.5 kernel with LetMeKnow's Extreme Tweaks
+ - Fixed installer so hopefully users won't have an issue with addon.d scripts
+ - Fixed the CM11 backup and restore scripts not running as ro.cm.version was missing CM11
+ - Fixed : ROM2SD  now correctly maps internal partitions to /datai, /systemi and /storage/sdcardi
+ -----ROM2SD still only works with a 4.2 JB ROM on internal
+ - Fixed : DATA2SD now offered again - currently uses _that v8 kernel
+ - Terminal Emulator lib file only installed when option is chosen in installer
+ - Added NTFS and extFAT support to stock based kernels
+ - Added Dolphin Browser and JetPack with FlashPlayer in installer as this is the only way to use flash in KitKat right now
+ - Updated Stock Browser Icon to Asus 4.3 version
+ - Updated Nova Launcher to version 2.3
+ 
+20140314 changes
+ - Updated Adobe Flash version to hacked version to test with 4.4
+ - Updated Adaway to version 2.8.1
+ - Updated Terminal Emulator to version 1.0.58
+ - Build.prop edit to increase scroll sensitivity
+   ro.min.fling_velocity=30000
+   ro.max.fling_velocity=60000
+ 
+20140309 changes
+ - lj50036 has rebased the Rom from CM11 source. No more CMB reliance
+ - Repacked all 3 kernels so up to date with CM11 changes
+ - Added Cyanogen Stock Bootanimation as option
+ - Inverted calendar removed and replaced with stock Google one
+ - Split GPU rendering into 2 parts - Need to test differences:
+   Part 1 forces GPU Rendering for 2D operations in the build.prop
+   Part 2 forces software rendering to be disabled thus the GPU must be used
+ - Cleaned up updater-script as not using CM Backup / Restore functionality for now
+ - Added tweaked Browser.apk back in as well as media codecs and lib file for Terminal Emulator
+ 
+20140308 changes
+ - Fixed Aroma script error meaning 95CleanTweaks not being given correct permissions to run as init.d
+ - Reset CPU profiles in the ramdisk so they mirror the ones we are used to from CROMi-X in terms of speed and fps limits
+ - That's kernel OCs to 1.8GHz with balanced at 1.5GHz and power saving at 1GHz
+ - lj50036's kernel OCs to 1.7GHz with balance at 1.5GHz and power saving at 1GHz
+ - Hunds's kernel OCs to 1.8GHz with balanced at 1.6GHz and power saving at 1.4GHz
+ - Attempted to fix issue with some users not being able to install to ROM2SD - but still broken if CROMBi-kk is on internal
+ - Updated media codecs from another CM11 build. Hopefully it'll fix dice and other video content
+ - Recompiled Browser.apk with speed tweaks as they got lost in a recent build
+ - If ROM2SD is chosen in installer then TWRP stays in ROM2SD mode until a reboot
+ - Gapps can be flashed to ROM2SD without needing the rom2sd1.zip if flashed straight after the rom installer
+ - Updated ES FIle Explorer to version 3.1.0.3
+ 
 20140306 changes
  - Updated GravityBox to version 2.9.8
  - Final tidy up of ROM and scripts for release
