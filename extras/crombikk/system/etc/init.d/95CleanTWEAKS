@@ -2,38 +2,101 @@
 # CleanTWEAKS!
 
 # Optimized remounts
-busybox mount -o remount,noatime,noauto_da_alloc,nodiratime,barrier=0,nobh /system
-busybox mount -o remount,noatime,noauto_da_alloc,nosuid,nodev,nodiratime,barrier=0,nobh /cache
-busybox mount -o remount,noatime,noauto_da_alloc,nosuid,nodev,nodiratime,barrier=0,nobh /data
+#busybox mount -o remount,noatime,noauto_da_alloc,nodiratime,barrier=0,nobh /system
+#busybox mount -o remount,discard,noatime,noauto_da_alloc,nosuid,nodev,nodiratime,barrier=0,nobh /cache
+#busybox mount -o remount,discard,noatime,noauto_da_alloc,nosuid,nodev,nodiratime,barrier=0,nobh /data
 
-#CPU and VM Tweaks
-echo "4096" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
-echo "4096" > /sys/devices/virtual/bdi/179:48/read_ahead_kb
+#-- IO RW Tweaks --#
+
+WIN=$(find /sys/devices/virtual/bdi/*/ -name read_ahead_kb)
+MMC=`ls -d /sys/block/mmc*`;
+
+echo "4096" | tee $WIN
+
+# Thanks to Pure Performances Team
+# Optimize non-rotating storage;
+for i in $MMC;
+do
+	#IMPORTANT!
+	if [ -e $i/queue/rotational ]; 
+	then
+		echo 0 > $i/queue/rotational; 
+	fi;
+	if [ -e $i/queue/nr_requests ];
+	then
+		echo 8192 > $i/queue/nr_requests; # for starters: keep it sane
+	fi;
+	
+	# deadline/VR/SIO scheduler specific
+	if [ -e $i/queue/iosched/fifo_batch ];
+	then
+		echo 1 > $i/queue/iosched/fifo_batch;
+	fi;
+	if [ -e $i/queue/iosched/writes_starved ];
+	then
+		echo 1 > $i/queue/iosched/writes_starved;
+	fi;
+
+echo "Disabling I/O Stats To Reduce Overhead..." >> $LOG
+# disable iostats to reduce overhead
+	if [ -e $i/queue/iostats ];
+	then
+		echo "0" > $i/queue/iostats;
+	fi;
+
+done;
+
+#-- Team CROMBi-kk CPU, Kernel, VM and FS Tweaks --#
+echo "1" > /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
 echo "0" > /sys/class/graphics/fb0/device/smartdimmer/enable
 echo "85" > /sys/devices/system/cpu/cpufreq/interactive/go_maxspeed_load
 echo "1800000" > /sys/devices/system/cpu/cpufreq/interactive/max_boost
 echo "760000" > /sys/devices/system/cpu/cpufreq/interactive/midrange_freq
-echo "1300000" > /sys/devices/system/cpu/cpufreq/interactive/max_normal_freq
+echo "1500000" > /sys/devices/system/cpu/cpufreq/interactive/max_normal_freq
 echo "65" > /sys/devices/system/cpu/cpufreq/interactive/midrange_go_maxspeed_load
 echo "40000" > /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
 echo "20000" > /sys/devices/system/cpu/cpufreq/interactive/timer_rate
-/system/xbin/sysctl -w fs.file-max=131072
+
+
+#/system/xbin/sysctl -w fs.file-max=131072
+/system/xbin/sysctl -w fs.file-max=65336
 /system/xbin/sysctl -w fs.inotify.max_queued_events=32768
 /system/xbin/sysctl -w fs.inotify.max_user_instances=256
 /system/xbin/sysctl -w fs.inotify.max_user_watches=10240
 /system/xbin/sysctl -w fs.lease-break-time=10
 /system/xbin/sysctl -w kernel.random.read_wakeup_threshold=1024
 /system/xbin/sysctl -w kernel.random.write_wakeup_threshold=2048
-/system/xbin/sysctl -w kernel.threads-max=524288
-/system/xbin/sysctl -w vm.dirty_ratio=90
-/system/xbin/sysctl -w vm.dirty_background_ratio=70
-/system/xbin/sysctl -w vm.dirty_expire_centisecs=200
+#/system/xbin/sysctl -w kernel.threads-max=524288
+/system/xbin/sysctl -w kernel.threads-max=5000
+/system/xbin/sysctl -w kernel.sem="500 512000 64 2048"
+/system/xbin/sysctl -w kernel.shmmax=268435456
+/system/xbin/sysctl -w kernel.shmall=2097152
+/system/xbin/sysctl -w kernel.shmmni=4096
+/system/xbin/sysctl -w kernel.msgmni=2048
+/system/xbin/sysctl -w kernel.msgmax=64000
+/system/xbin/sysctl -w kernel.panic=30
+/system/xbin/sysctl -w kernel.panic_on_oops=0
+/system/xbin/sysctl -w vm.dirty_ratio=70
+/system/xbin/sysctl -w vm.dirty_background_ratio=35
+/system/xbin/sysctl -w vm.dirty_expire_centisecs=3000
+#/system/xbin/sysctl -w vm.dirty_ratio=90
+#/system/xbin/sysctl -w vm.dirty_background_ratio=80
+#/system/xbin/sysctl -w vm.dirty_expire_centisecs=200
 /system/xbin/sysctl -w vm.dirty_writeback_centisecs=500
-/system/xbin/sysctl -w vm.min_free_kbytes=5572
+/system/xbin/sysctl -w vm.min_free_kbytes=5120
+#/system/xbin/sysctl -w vm.min_free_kbytes=5572
 /system/xbin/sysctl -w vm.vfs_cache_pressure=10
+#/system/xbin/sysctl -w vm.oom_kill_allocating_task=1
 /system/xbin/sysctl -w vm.oom_kill_allocating_task=0
+/system/xbin/sysctl -w vm.overcommit_memory=1
+/system/xbin/sysctl -w vm.min_free_order_shift=4
+/system/xbin/sysctl -w vm.block_dump=0
+/system/xbin/sysctl -w vm.oom_dump_tasks=1
+/system/xbin/sysctl -w vm.page-cluster=3
+/system/xbin/sysctl -w vm.panic_on_oom=0
+/system/xbin/sysctl -w vm.block_dump=0
 
-#Net Tweaks
+#-- Net Tweaks --#
 /system/xbin/sysctl -w net.ipv4.tcp_congestion_control=lp
 /system/xbin/sysctl -w net.ipv4.tcp_mem="4000000 4054304 4194304"
 /system/xbin/sysctl -w net.ipv4.udp_mem="4000000 4054304 4194304"
@@ -52,5 +115,9 @@ echo "20000" > /sys/devices/system/cpu/cpufreq/interactive/timer_rate
 /system/xbin/sysctl -w net.ipv4.route.flush=1
 /system/xbin/sysctl -w net.ipv6.route.flush=1
 
+#-- Write Log to show init.d script ran correctly --#
+if [ -e /data/local/tmp/init.d_log_test.txt ]; then
+	rm /data/local/tmp/init.d_log_test.txt;
+fi;
 touch /data/local/tmp/init.d_log_test.txt
-echo "done" >> /data/local/tmp/init.d_log_test.txt
+echo "CROMBi-Kk 95CleanTweaks completed at $( date +"%m-%d-%Y %H:%M:%S" )" >> /data/local/tmp/init.d_log_test.txt
